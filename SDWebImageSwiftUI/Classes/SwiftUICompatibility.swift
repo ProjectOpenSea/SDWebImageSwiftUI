@@ -78,17 +78,16 @@ extension View {
         
         // ETB: We use the system appear/disappear on iOS 15 and up to avoid memory leaks
         if #available(iOS 15, *) {
-            return self
+            self
                 .onAppear(perform: appear)
                 .onDisappear(perform: disappear)
         } else {
             // ETB: This is needed on iOS 14 since the app freezes otherwise
             #if os(iOS) || os(tvOS) || os(macOS)
-            return self.background(PlatformAppear(appearAction: appear, disappearAction: disappear))
+            self.background(PlatformAppear(appearAction: appear, disappearAction: disappear))
             #else
-            return self.onAppear(perform: appear).onDisappear(perform: disappear)
+            self.onAppear(perform: appear).onDisappear(perform: disappear)
             #endif
         }
-        
     }
 }
