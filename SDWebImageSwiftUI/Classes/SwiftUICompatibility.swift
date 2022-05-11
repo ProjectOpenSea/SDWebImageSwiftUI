@@ -75,16 +75,20 @@ extension View {
     ///   - disappear: The action when view disappears
     /// - Returns: Some view
     func onPlatformAppear(appear: @escaping () -> Void = {}, disappear: @escaping () -> Void = {}) -> some View {
-        /*
-         * ETB: This code was commented out because it causes memory leaks
-        #if os(iOS) || os(tvOS) || os(macOS)
-        return self.background(PlatformAppear(appearAction: appear, disappearAction: disappear))
-        #else
-        return self.onAppear(perform: appear).onDisappear(perform: disappear)
-        #endif
-         */
-        return self
-            .onAppear(perform: appear)
-            .onDisappear(perform: disappear)
+        
+        // ETB: We use the system appear/disappear on iOS 15 and up to avoid memory leaks
+        if #available(iOS 15, *) {
+            return self
+                .onAppear(perform: appear)
+                .onDisappear(perform: disappear)
+        } else {
+            // ETB: This is needed on iOS 14 since the app freezes otherwise
+            #if os(iOS) || os(tvOS) || os(macOS)
+            return self.background(PlatformAppear(appearAction: appear, disappearAction: disappear))
+            #else
+            return self.onAppear(perform: appear).onDisappear(perform: disappear)
+            #endif
+        }
+        
     }
 }
