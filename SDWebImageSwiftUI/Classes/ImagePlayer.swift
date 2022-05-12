@@ -38,7 +38,7 @@ public final class ImagePlayer : ObservableObject {
     @Published public var currentFrame: PlatformImage?
     
     /// Current playing frame index
-    @Published public var currentFrameIndex: UInt = 0
+    public var currentFrameIndex: UInt = 0
     
     /// Current playing loop count
     @Published public var currentLoopCount: UInt = 0
@@ -87,12 +87,16 @@ public final class ImagePlayer : ObservableObject {
         }
         if let imagePlayer = SDAnimatedImagePlayer(provider: animatedImage) {
             imagePlayer.animationFrameHandler = { [weak self] (index, frame) in
-                self?.currentFrameIndex = index
-                self?.currentFrame = frame
+                // Make sure we trigger combine in the main thread
+                DispatchQueue.main.async {
+                    self?.currentFrameIndex = index
+                    self?.currentFrame = frame
+                }
             }
-            imagePlayer.animationLoopHandler = { [weak self] (loopCount) in
-                self?.currentLoopCount = loopCount
-            }
+            // We don't need this at OpenSea, so we take this out to reduce unnessasary UI refresh
+//            imagePlayer.animationLoopHandler = { [weak self] (loopCount) in
+//                self?.currentLoopCount = loopCount
+//            }
             // Setup configuration
             if let maxBufferSize = maxBufferSize {
                 imagePlayer.maxBufferSize = maxBufferSize
